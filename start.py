@@ -15,8 +15,8 @@ else:
     from queue import Queue
 
 
-# from loggers.elasticsearch_logger import ElasticSearchLogger
-# from loggers.file_logger import FileLogger
+from loggers.elasticsearch_logger import ElasticSearchLogger
+from loggers.file_logger import FileLogger
 
 VERSION = "v0.5"
 
@@ -27,26 +27,26 @@ class ServerManager(object):
         self._config = {}
         self.parse_config(config_file_path)
         self.__loggers = []
-        # self.setup_loggers()
+        self.setup_loggers()
 
-    # def setup_loggers(self):
-    #     valid_loggers = ['elasticsearch', 'file']
-    #     for item in self._config['loggers']:
+    def setup_loggers(self):
+        valid_loggers = ['elasticsearch', 'file']
+        for item in self._config['loggers']:
 
-    #         if self._config['loggers'][item]['active'] == False:
-    #             continue
+            if self._config['loggers'][item]['active'] == False:
+                continue
 
-    #         if item == 'elasticsearch':
-    #             self.__loggers.append(ElasticSearchLogger(self._config['loggers'][item]['config']))
-    #         elif item == "file":
-    #             self.__loggers.append(FileLogger())
-    #         else:
-    #             print("Invalid logger")
-    #             sys.exit(1)
+            if item == 'elasticsearch':
+                self.__loggers.append(ElasticSearchLogger(self._config['loggers'][item]['config']))
+            elif item == "file":
+                self.__loggers.append(FileLogger())
+            else:
+                print("Invalid logger")
+                sys.exit(1)
 
-    #     if len(self.__loggers) == 0:
-    #         print("No loggers configured")
-    #         sys.exit(1)
+        if len(self.__loggers) == 0:
+            print("No loggers configured")
+            sys.exit(1)
 
 
     def start_servers(self):
@@ -67,13 +67,14 @@ class ServerManager(object):
                 sys.exit(2)
 
             server = None
+            print(server_config['port'])
             if server_config['mode'] == "http":
-                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait)
+                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers)
             elif server_config['mode'] == "https":
                 if "cert_path" not in server_config:
                      self.error("cert_path not set for https " + handler)
                      sys.exit(3)
-                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, server_config['cert_path'])
+                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers, server_config['cert_path'])
             
             server.start()
             self._servers.append(server)

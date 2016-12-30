@@ -3,6 +3,7 @@ import threading
 from string import Template
 import ssl
 import os
+import hashlib
 
 import lib.encode as encode
 
@@ -12,8 +13,25 @@ if sys.version_info.major == 2:
 else:
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
+# Handler for HTTP requests
 class HTTPHandler(BaseHTTPRequestHandler, object):
 
+    def get_raw_request(self):
+        if self.command is None or self.path is None or self.request_version is None:
+            return ""
+
+        raw_request = self.command + " " + self.path + " " + self.request_version + "\n" + str(self.headers)
+        
+        if "Content-Length" in self.headers:
+            length = int(self.headers['Content-Length'])
+            if sys.version_info.major == 2:
+                raw_request += "\n" + self.rfile.read(length)
+            else:
+                raw_request += "\n" + self.rfile.read(length).decode('utf-8')
+
+        return raw_request
+
+    # For sending errors (Overwrite)
     def send_error(self, code, extra=""):
         
         message = self.responses[code][0]
@@ -50,10 +68,27 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
             self.send_header(header[0], header[1]) 
         self.end_headers()
 
+        self.server.log(self.client_address[0], self.client_address[1], self.get_raw_request(), "Error code " + str(code))
         self.wfile.write(encode.get_plain(error_message))
 
-        # super(Py2HoneyHTTPHandler, self).send_error(code, message)
 
+    # For sending responses
+    def send_success_response(self, data, headers):
+        print(headers)
+        headers, data = self.response_headers(headers, data)
+
+        self.send_response(200)
+
+        for header in headers:
+            self.send_header(header[0], header[1]) 
+
+        self.end_headers()
+
+        data = encode.get_plain(data)
+        self.server.log(self.client_address[0], self.client_address[1], self.get_raw_request(), data)
+        self.wfile.write(data)
+
+    # On GET requests
     def do_GET(self):
         
         code, extra = self.on_request(self)
@@ -67,16 +102,9 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
         if code != 200:
             self.send_error(code, data)
         else:
-            headers, data = self.response_headers(headers, data)
+            self.send_success_response(data, headers)
 
-            self.send_response(200)
-
-            for header in headers:
-                self.send_header(header[0], header[1]) 
-
-            self.end_headers()
-            self.wfile.write(data)
-
+    # On POST requests
     def do_POST(self):
 
         code, extra = self.on_request(self)
@@ -90,19 +118,12 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
         if code != 200:
             self.send_error(code, data)
         else:
-            headers, data = self.response_headers(headers, data)
-
-            self.send_response(200)
-
-            for header in headers:
-                self.send_header(header[0], header[1]) 
-
-            self.end_headers()
-            self.wfile.write(data)
-
+            self.send_success_response(data, headers)
+        
+# Main server class. All other servers must inherit from this class
 class Server(threading.Thread):
 
-    def __init__(self, domain_name, port, timeout, queue, ssl_cert=None):
+    def __init__(self, domain_name, port, timeout, queue, loggers, ssl_cert=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self._domain_name = domain_name
@@ -110,12 +131,14 @@ class Server(threading.Thread):
         self._queue = queue
         self._timeout = timeout
         self._ssl_cert = ssl_cert
+        self._loggers = loggers
 
     # Setup and start the handler
     def run(self):
         server_address = ('', int(self._port))
 
         httpd = HTTPServer(server_address, HTTPHandler)
+        httpd.log = self.log
         HTTPHandler.server_version = self.server_version()
         HTTPHandler.sys_version = self.system()
         HTTPHandler.error_message_format = self.error_format(self._port)
@@ -156,6 +179,27 @@ class Server(threading.Thread):
 
         return headers, data
 
+    def log(self, remote_ip, remote_port, request, response):
+
+        is_large = False
+        if len(request) > 2048:
+            large_file = self.save_large(remote_ip, self._port, request)
+            request = "Output saved at " + large_file
+            is_large = True
+
+        for logger in self._loggers:
+            logger.log(remote_ip, remote_port, self._ssl_cert is not None, self._port, request, response, is_large)
+
+    def save_large(self, remote_ip, port, data):
+        m = hashlib.md5()
+        m.update(data)
+        output_filename = "./large/" + remote_ip + "-" + str(port) +  "-" + str(time.time()) + "-" + m.hexdigest() + ".large"
+
+        out_file = open(output_filename, "wb")
+        out_file.write(data)
+        out_file.close()
+
+        return output_filename
 
     def ready(self):
         self._queue.put(True)

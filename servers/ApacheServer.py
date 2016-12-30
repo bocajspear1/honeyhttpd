@@ -89,5 +89,12 @@ class ApacheServer(Server):
         else:
             return 200, [], "<html><head><title>My Website</title></head><body>Hi</body></html>"
 
+    def on_POST(self, path, headers):
+        if path == "/":
+            return 426, [], "admin@example.com"
+            # return 500, [], "Basic realm=\"test\""
+        else:
+            return 200, [], "<html><head><title>My Website</title></head><body>Hi</body></html>"
+
     def on_error(self, handler, code, message):
         return code, [("Connection", "close"), ("Content-Type", "text/html; charset=iso-8859-1")], message
