@@ -1,4 +1,4 @@
-from lib.server import Server
+from honeyhttpd.lib.server import Server
 
 class Tomcat7Server(Server):
 
@@ -80,5 +80,11 @@ class Tomcat7Server(Server):
 
         return 404, [], ""
 
-    def on_error(self, handler, code, message):
-        return code, message
+    def on_error(self, code, headers, message):
+        return code, headers, message
+
+    # Called on any form of request. Return None, None if you wish to continue normally, or return ERROR_CODE, EXTRA
+    def on_request(self, handler):
+        if not handler.path.startswith("/"):
+            return 400, ""
+        return None, None

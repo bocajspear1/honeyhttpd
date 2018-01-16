@@ -4,7 +4,41 @@
 
 HoneyHTTPD is a Python-based web server honeypot framework. It makes it easy to set up fake web servers and record the requests given to it.
 
-Still a work in progress.
+
+This information can be logged to different places, the currently supported outputs are:
+* Files
+* ElasticSearch
+
+HoneyPoke supports both Python2 and Python 3.
+
+## Installation
+
+1. Clone or download this repo
+2. Install dependencies: 
+    * Python 2: `sudo pip -r requirements2.txt` 
+    * Python 3: `sudo pip3 -r requirements3.txt` 
+3. Be sure the `large` and `logs` directories are writeable by the user and group you plan to have HoneyHTTPD running under.
+
+## Setup
+
+1. Copy `config.json.default`  to `config.json` Modify the config file. 
+    * `loggers` enables and disables loggers. This done with the `active` key under the respective loggers. Some may need extra configuation, which is in the `config` key.
+    * `servers` contains a list of servers you want to run. Each entry has the following keys:
+            * `handler` indicates the server module in the `servers` directory to use for that port
+            * `mode` is either `http` or `https` which indicates if the server should return normal HTTP or HTTPS
+            * `port` is the port to run on 
+            * `domain` indicates the "domain" this server is running 
+            * `timeout` is the timeout for requests 
+            * `cert_path` is only required when in `https` mode. This is the path to the server certificate in the PEM format.
+    * `user` is the user you want the script to drop privileges to
+    * `group` is the group you want the script to drop privileges to
+2. Run HoneyHTTPD with:
+    * Python 2 `sudo python2 start.py --config config.json`
+    * Python 3 `sudo python3 start.py --config config.json`
+
+## Making Server Modules
+
+Server modules live in the `servers` directory. They are classes that handle the HTTP requests. These modules must inherit from the `Server` class in `lib.server`. The class name and the name of the server module file must be the same. Modules can inherit from other server modules to build on their functionality.
 
 ## Contributing
 

@@ -1,0 +1,20 @@
+{
+    "loggers": {
+        "elasticsearch": {
+            "active": false,
+            "config": {
+                "server": "http://USERNAME:PASSWORD@ELASTICSEARCH_SERVER",
+		        "verify": false
+            }
+        }, 
+        "file": {
+            "active": true
+        }
+    },
+    "servers" : [
+        {"handler": "ApacheServer", "mode": "https", "port": 8443, "domain": "example.com", "timeout": 10, "cert_path": "server.pem"},
+        {"handler": "ApacheServer", "mode": "http", "port": 8000, "domain": "example.com", "timeout": 10}
+    ],
+    "user": "nobody",
+    "group": "nogroup"
+}

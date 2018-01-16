@@ -1,19 +1,24 @@
-from lib.server import Server
+from honeyhttpd.lib.server import Server
 
 class ApacheServer(Server):
 
+    # Name of the server
     def name(self):
         return "Apache"
 
+    # Version of the server
     def version(self):
         return "1.0.2"
 
+    # The system of the server to fake
     def system(self):
         return "(Ubuntu)"
 
+    # The value placed in the "Server" header
     def server_version(self):
         return self.name() + "/" + self.version()
 
+    # Mapping of HTTP codes to template messages
     def responses(self):
         return {
                 200: ('OK', 'Request fulfilled, document follows'), 
@@ -77,11 +82,13 @@ class ApacheServer(Server):
 
 """
 
+    # Called on any form of request. Return None, None if you wish to continue normally, or return ERROR_CODE, EXTRA
     def on_request(self, handler):
         if not handler.path.startswith("/"):
             return 400, ""
         return None, None
 
+    # Called on GET requests. Return ERROR_CODE, HEADERS, EXTRA
     def on_GET(self, path, headers):
         if path == "/":
             return 426, [], "admin@example.com"

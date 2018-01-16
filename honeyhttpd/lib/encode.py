@@ -1,8 +1,9 @@
 import sys
 import gzip
 import zlib
+import base64
 
-def get_gzip(data):
+def encode_gzip(data):
     if sys.version_info.major == 2:
         import StringIO as io
         out = io.StringIO()
@@ -13,11 +14,18 @@ def get_gzip(data):
         data = bytes(data, 'utf-8')
         return gzip.compress(data)
 
-def get_deflate(data):
+def encode_deflate(data):
     return zlib.compress(data)
 
-def get_plain(data):
+def encode_plain(data):
     if sys.version_info.major == 2:
         return data
     else:
         return data.encode('utf-8')
+
+def decode_base64(data):
+    decode_input = data
+    if sys.version_info.major == 3:
+        decode_input = decode_input.encode("utf-8")
+
+    return base64.decodestring(decode_input)
