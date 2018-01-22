@@ -40,4 +40,4 @@ class S3Logger(object):
             aws_secret_access_key=self._aws_secret_access_key
         )
 
-        s3.Object(self._aws_bucket, remote_ip + "/" + datetime.datetime.now().isoformat()).put(Body=body, Metadata=extra, Tagging=urlencode(tags))
+        s3.Object(self._aws_bucket, platform.node() + "/" + remote_ip + "/" + datetime.datetime.now().isoformat()).put(Body=body, Metadata=extra, Tagging=urlencode(tags))
