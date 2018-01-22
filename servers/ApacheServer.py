@@ -8,7 +8,7 @@ class ApacheServer(Server):
 
     # Version of the server
     def version(self):
-        return "1.0.2"
+        return "2.4.9"
 
     # The system of the server to fake
     def system(self):

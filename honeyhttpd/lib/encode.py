@@ -27,5 +27,6 @@ def decode_base64(data):
     decode_input = data
     if sys.version_info.major == 3:
         decode_input = decode_input.encode("utf-8")
-
-    return base64.decodestring(decode_input)
+        return base64.decodestring(decode_input).decode("utf-8")
+    else:
+        return base64.decodestring(decode_input)

@@ -85,8 +85,10 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
             self.send_header(header[0], header[1]) 
         self.end_headers()
 
-        self.server.log(self.client_address[0], self.client_address[1], self.get_raw_request(), "Error code " + str(code))
+        
         self.wfile.write(data)
+
+        return headers, data
 
     # For sending responses
     def send_success_response(self, data, headers):
@@ -100,40 +102,64 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
 
         self.end_headers()
 
-        self.server.log(self.client_address[0], self.client_address[1], self.get_raw_request(), data)
+        
         self.wfile.write(data)
+
+        return headers, data
+
 
     # On GET requests
     def do_GET(self):
         
         code, extra = self.on_request(self)
         
+        self.server.client_address = self.client_address[0]
+        self.server.client_port = self.client_address[1]
+        print(self.server.client_address)
+
         if code != None:
             self.send_error(code, extra)
             return
 
-        code, headers, data = self.on_GET(self.path, self.headers.items())
+        req_headers = self.headers.items()
+        
+        code, headers, data = self.on_GET(self.path, req_headers)
+
+        res_headers = []
+        res_data = ""
 
         if code != 200:
-            self.send_error(code, data)
+            res_headers, res_data = self.send_error(code, data)
         else:
-            self.send_success_response(data, headers)
+            res_headers, res_data = self.send_success_response(data, headers)
+
+        self.on_complete(self.client_address, code, req_headers, res_headers, self.get_raw_request(), res_data)
 
     # On POST requests
     def do_POST(self):
 
         code, extra = self.on_request(self)
 
+        self.server.client_address = self.client_address[0]
+        self.server.client_port = self.client_address[1]
+
         if code != None:
             self.send_error(code, extra)
             return
 
-        code, headers, data = self.on_POST(self.path, self.headers.items())
+        req_headers = self.headers.items()
+
+        code, headers, data = self.on_POST(self.path, req_headers)
+
+        res_headers = []
+        res_data = ""
 
         if code != 200:
-            self.send_error(code, data)
+            res_headers, res_data = self.send_error(code, data)
         else:
-            self.send_success_response(data, headers)
+            res_headers, res_data = self.send_success_response(data, headers)
+
+        self.on_complete(self.client_address, code, req_headers, res_headers, self.get_raw_request(), res_data)
         
 # Main server class. All other servers must inherit from this class
 class Server(threading.Thread):
@@ -152,6 +178,7 @@ class Server(threading.Thread):
         self._timeout = timeout
         self._ssl_cert = ssl_cert
         self._loggers = loggers
+
 
     # Setup and start the handler
     def run(self):
@@ -174,6 +201,7 @@ class Server(threading.Thread):
         HTTPHandler.on_GET = self.on_GET
         HTTPHandler.on_POST = self.on_POST
         HTTPHandler.on_error = self.on_error
+        HTTPHandler.on_complete = self.on_complete
 
         if self._ssl_cert is not None:
             httpd.socket = ssl.wrap_socket(httpd.socket, certfile=self._ssl_cert, server_side=True)
@@ -227,7 +255,7 @@ class Server(threading.Thread):
 
         return headers, data
 
-    def log(self, remote_ip, remote_port, request, response):
+    def log(self, client, request, response, extra={}):
         """
         This method records the request and response in the loggers
 
@@ -235,18 +263,25 @@ class Server(threading.Thread):
         :param remote_port: (int) The remote host's port
         :param request: (str) The string containing the request
         :param response: (str) The string containing the response or message indicating the response
+        :param extra: (dict) Extra data to log
 
         """
-        is_large = False
-        if len(request) > 2048:
-            large_file = self.save_large(remote_ip, self._port, request)
-            request = "Output saved at " + large_file
-            is_large = True
+
+        stores_large = True
 
         for logger in self._loggers:
-            logger.log(remote_ip, remote_port, self._ssl_cert is not None, self._port, request, response, is_large)
+            stores_large = stores_large and logger.stores_large()
 
-    def save_large(self, remote_ip, port, data):
+        if stores_large is False and len(request) > 2048:
+            large_file = self.save_large_file(client[0], self._port, request)
+            request = "Output saved at " + large_file
+
+        for logger in self._loggers:
+            logger.log(client[0], client[1], self._ssl_cert is not None, self._port, request, response, extra)
+
+        
+
+    def save_large_file(self, remote_ip, port, data):
         """
         This method saves the data to a file
 
@@ -354,6 +389,22 @@ class Server(threading.Thread):
             
             * headers (str[]) - List containing header
             * data (str) - The return data 
+
+        """
+        raise NotImplementedError
+
+    def on_complete(self, client, code, req_headers, res_headers, request, response):
+        """
+        .. note:: This function must be implemented
+
+        This method is called when any call is completed
+        
+        :param code: (int) The HTTP status code sent
+        :param headers: (tuple[]) The HTTP headers sent
+        :param request: The request message
+        :param response: The response message
+        :returns:  
+            None
 
         """
         raise NotImplementedError

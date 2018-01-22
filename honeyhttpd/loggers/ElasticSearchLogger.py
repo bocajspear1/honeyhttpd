@@ -13,8 +13,10 @@ class ElasticSearchLogger(object):
 
         self.__verify_certs = config['verify']
 
-    
-    def log(self, remote_ip, remote_port, is_ssl, port, request, response, is_large):
+    def stores_large(self):
+        return False
+
+    def log(self, remote_ip, remote_port, is_ssl, port, request, response, extra={}):
         protocol = "http"
         if is_ssl:
             protocol = "https"

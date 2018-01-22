@@ -24,8 +24,6 @@ else:
 
 from .lib.module_util import import_module
 
-from .loggers.elasticsearch_logger import ElasticSearchLogger
-from .loggers.file_logger import FileLogger
 
 VERSION = "v0.5.0"
 
@@ -57,19 +55,20 @@ class ServerManager(object):
         Sets up the configured loggers
 
         """
-        valid_loggers = ['elasticsearch', 'file']
         for item in self._config['loggers']:
 
             if self._config['loggers'][item]['active'] == False:
                 continue
 
-            if item == 'elasticsearch':
-                self.__loggers.append(ElasticSearchLogger(self._config['loggers'][item]['config']))
-            elif item == "file":
-                self.__loggers.append(FileLogger())
+            logger_module = import_module("honeyhttpd/loggers", item)
+            if logger_module is None:
+                self.error("Invalid handler " + item)
+                sys.exit(2)
+
+            if "config" in self._config['loggers'][item]:
+                self.__loggers.append(logger_module(self._config['loggers'][item]['config']))
             else:
-                print("Invalid logger")
-                sys.exit(1)
+                self.__loggers.append(logger_module())
 
         if len(self.__loggers) == 0:
             print("No loggers configured")
@@ -88,7 +87,7 @@ class ServerManager(object):
         # Add servers
         for server_config in server_list:
             handler = server_config['handler']
-            server_module = import_module(handler)
+            server_module = import_module("servers", handler)
             if server_module is None:
                 self.error("Invalid handler " + handler)
                 sys.exit(2)

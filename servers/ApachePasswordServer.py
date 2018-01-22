@@ -9,14 +9,9 @@ class ApachePasswordServer(ApacheServer):
         return None, None
 
     def on_GET(self, path, headers):
-        if "authorization" in headers:
-            auth_split = headers["authorization"].split(" ")
-            if len(auth_split) > 1:
-                auth_data = auth_split[1]
-                print(auth_data)
-                print(encode.decode_base64(auth_data))
-        if path == "/" or path == "/index.php":
-            return 401, [("hi", "there")],  "Basic realm=\"Secure Area\""
+        
+        if path == "/" or path == "/index.php" or path == "/admin":
+            return 401, [],  "Basic realm=\"Secure Area\""
         return 404, [], ""
 
     def on_POST(self, path, headers):
@@ -25,8 +20,22 @@ class ApachePasswordServer(ApacheServer):
     def on_error(self, code, headers, message):
         return code, [("Connection", "close"), ("Content-Type", "text/html; charset=iso-8859-1")], message
 
+    def on_complete(self, client, code, req_headers, res_headers, request, response):
+
+        extra = {}
+
+        for header in req_headers:
+            # Encode the response data if the Content-Encoding is set
+            if header[0].lower() == "authorization":
+
+                auth_split = header[1].split(" ")
+                if len(auth_split) > 1:
+                    auth_data = auth_split[1]
+                    extra['creds'] = encode.decode_base64(auth_data)
+
+        self.log(client, request, response, extra)
 
     def default_headers(self):
         return [
-            ("wassup", "dude")
+            
         ]

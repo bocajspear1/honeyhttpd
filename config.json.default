@@ -1,14 +1,22 @@
 {
     "loggers": {
-        "elasticsearch": {
+        "ElasticSearchLogger": {
             "active": false,
             "config": {
                 "server": "http://USERNAME:PASSWORD@ELASTICSEARCH_SERVER",
 		        "verify": false
             }
         }, 
-        "file": {
+        "FileLogger": {
             "active": true
+        },
+         "S3Logger": {
+            "active": false,
+            "config": {
+                "key_id": "",
+                "key": "",
+                "bucket": ""
+            }
         }
     },
     "servers" : [
