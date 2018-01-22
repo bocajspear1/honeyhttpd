@@ -40,6 +40,14 @@ HoneyPoke supports both Python2 and Python 3.
 
 Server modules live in the `servers` directory. They are classes that handle the HTTP requests. These modules must inherit from the `Server` class in `lib.server`. The class name and the name of the server module file must be the same. Modules can inherit from other server modules to build on their functionality.
 
+## Generating SSL certificates
+
+```
+openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+```
+
+From [here](https://gist.github.com/dergachev/7028596).
+
 ## Contributing
 
 Go at it! Open an issue, make a pull request, fork it, etc.
