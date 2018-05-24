@@ -93,13 +93,15 @@ class ServerManager(object):
                 sys.exit(2)
 
             server = None
-            print(server_config['port'])
+            
             if server_config['mode'] == "http":
+                print("Starting http on port " + str(server_config['port']))
                 server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers)
             elif server_config['mode'] == "https":
                 if "cert_path" not in server_config:
                      self.error("cert_path not set for https " + handler)
                      sys.exit(3)
+                print("Starting https on port " + str(server_config['port']))
                 server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers, server_config['cert_path'])
             
             server.start()

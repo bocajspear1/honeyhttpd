@@ -115,7 +115,6 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
         
         self.server.client_address = self.client_address[0]
         self.server.client_port = self.client_address[1]
-        print(self.server.client_address)
 
         if code != None:
             self.send_error(code, extra)
@@ -127,7 +126,7 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
 
         res_headers = []
         res_data = ""
-
+        
         if code != 200:
             res_headers, res_data = self.send_error(code, data)
         else:

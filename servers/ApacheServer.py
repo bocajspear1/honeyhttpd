@@ -103,5 +103,9 @@ class ApacheServer(Server):
         else:
             return 200, [], "<html><head><title>My Website</title></head><body>Hi</body></html>"
 
-    def on_error(self, handler, code, message):
+    def on_error(self, code, headers, message):
         return code, [("Connection", "close"), ("Content-Type", "text/html; charset=iso-8859-1")], message
+
+    def on_complete(self, client, code, req_headers, res_headers, request, response):
+        # Do something when the request is done and the response is sent
+        pass
