@@ -1,0 +1,12 @@
+{
+    "loggers": {
+        "StdoutLogger" : {
+            "active": true
+        }
+    },
+    "servers" : [
+        {"handler": "TestServer", "mode": "http", "port": 8080, "domain": "example.com", "timeout": 10}
+    ],
+    "user": "nobody",
+    "group": "nogroup"
+}

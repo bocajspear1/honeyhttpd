@@ -148,7 +148,16 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
 
         req_headers = self.headers.items()
 
-        code, headers, data = self.on_POST(self.path, req_headers)
+        post_data = ""
+
+        for header in req_headers:
+            if header[0] == 'Content-Length':
+                try:
+                    post_data = self.rfile.read(int(header[1]))
+                except:
+                    self.send_error(400, "")
+
+        code, headers, data = self.on_POST(self.path, req_headers, post_data)
 
         res_headers = []
         res_data = ""

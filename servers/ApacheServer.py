@@ -96,7 +96,7 @@ class ApacheServer(Server):
         else:
             return 200, [], "<html><head><title>My Website</title></head><body>Hi</body></html>"
 
-    def on_POST(self, path, headers):
+    def on_POST(self, path, headers, post_data):
         if path == "/":
             return 426, [], "admin@example.com"
             # return 500, [], "Basic realm=\"test\""

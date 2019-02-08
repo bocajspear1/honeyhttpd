@@ -14,7 +14,7 @@ class ApachePasswordServer(ApacheServer):
             return 401, [],  "Basic realm=\"Secure Area\""
         return 404, [], ""
 
-    def on_POST(self, path, headers):
+    def on_POST(self, path, headers, post_data):
         return 404, [], ""
 
     def on_error(self, code, headers, message):

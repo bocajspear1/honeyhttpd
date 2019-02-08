@@ -30,3 +30,9 @@ def decode_base64(data):
         return base64.decodestring(decode_input).decode("utf-8")
     else:
         return base64.decodestring(decode_input)
+
+def decode_plain(data):
+    if sys.version_info.major == 2:
+        return data
+    else:
+        return data.decode('utf-8')

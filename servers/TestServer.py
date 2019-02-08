@@ -1,12 +1,17 @@
 from honeyhttpd.lib.server import Server
 
-class Tomcat7Server(Server):
+class TestServer(Server):
+
+    def _dump_headers(self, headers):
+        print("Headers:")
+        for header in headers:
+            print("    " + header[0] + ": " + header[1])
 
     def name(self):
-        return "Apache Tomcat"
+        return "Test Server"
 
     def version(self):
-        return "7.0.60"
+        return "1.0"
 
     def system(self):
         return ""
@@ -67,18 +72,29 @@ class Tomcat7Server(Server):
 
     def on_GET(self, path, headers):
 
-        res_headers = [("Content-Encoding", "gzip"), ("Content-Type", "text/html;charset=UTF-8"), ("Connection", "Keep-Alive")]
+        print("\nGET Request\n=====================================")
+        print("Path: ", path)
+        self._dump_headers(headers)
 
-        if path == "/":
-            return 200, res_headers, "<html><head><title>My Website</title></head><body>Hi</body></html>"
-        elif path == "/admin":
-            return 403, res_headers, "<html><head><title>My Website</title></head><body>Hi</body></html>"
-        else:
-            return 404, [{"": "", "": ""}], ""
+        res_headers = [("Content-Type", "text/html;charset=UTF-8"), ("Connection", "Keep-Alive")]
+        if path == "/" or path == "/ok":
+            return 200, res_headers, "<html><head><title>GET! HoneyHTTPd Test Website</title></head><body>Hi</body></html>"
+        elif  path == "/notfound":
+            return 404, res_headers, "THERE_WAS_AN_ERROR"
     
     def on_POST(self, path, headers, post_data):
 
-        return 404, [], ""
+        print("\nPOST Request\n=====================================")
+        print("Path: ", path)
+        self._dump_headers(headers)
+        print("Data:", repr(post_data))
+
+        res_headers = [("Content-Type", "text/html;charset=UTF-8"), ("Connection", "Keep-Alive")]
+
+        if path == "/notfound":
+            return 404, res_headers, "THERE_WAS_AN_ERROR"
+        else:
+            return 200, res_headers, "<html><head><title>POST! HoneyHTTPd Test Website</title></head><body>Hi</body></html>"
 
     def on_error(self, code, headers, message):
         return code, headers, message

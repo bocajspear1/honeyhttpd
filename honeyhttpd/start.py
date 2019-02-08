@@ -25,7 +25,7 @@ else:
 from .lib.module_util import import_module
 
 
-VERSION = "v0.5.0"
+VERSION = "v0.5.2"
 
 BANNER = """
         _______  _        _______                   __________________ _______  ______  
