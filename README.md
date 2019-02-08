@@ -24,12 +24,12 @@ HoneyPoke supports both Python2 and Python 3.
 1. Copy `config.json.default`  to `config.json` Modify the config file. 
     * `loggers` enables and disables loggers. This done with the `active` key under the respective loggers. Some may need extra configuation, which is in the `config` key.
     * `servers` contains a list of servers you want to run. Each entry has the following keys:
-            * `handler` indicates the server module in the `servers` directory to use for that port
-            * `mode` is either `http` or `https` which indicates if the server should return normal HTTP or HTTPS
-            * `port` is the port to run on 
-            * `domain` indicates the "domain" this server is running 
-            * `timeout` is the timeout for requests 
-            * `cert_path` is only required when in `https` mode. This is the path to the server certificate in the PEM format.
+        * `handler` indicates the server module in the `servers` directory to use for that port
+        * `mode` is either `http` or `https` which indicates if the server should return normal HTTP or HTTPS
+        * `port` is the port to run on 
+        * `domain` indicates the "domain" this server is running 
+        * `timeout` is the timeout for requests 
+        * `cert_path` is only required when in `https` mode. This is the path to the server certificate in the PEM format.
     * `user` is the user you want the script to drop privileges to
     * `group` is the group you want the script to drop privileges to
 2. Run HoneyHTTPD with:
