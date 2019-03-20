@@ -1,12 +1,23 @@
 {
     "loggers": {
         "StdoutLogger" : {
-            "active": true
+            "active": false
         }
     },
     "servers" : [
-        {"handler": "TestServer", "mode": "http", "port": 8080, "domain": "example.com", "timeout": 10}
-    ],
+        {
+        "handler": "TestServer",
+        "config" :
+        {
+            "server_address": ["localhost", 8080],
+            "timeout": 10,
+            "mode": "http",
+            "logger" : "",
+            "handlerClass" : "",
+            "bindActivate" : "",
+            "cert_path" : ""
+        }
+    }],
     "user": "nobody",
     "group": "nogroup"
 }

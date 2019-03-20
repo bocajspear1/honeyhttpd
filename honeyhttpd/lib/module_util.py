@@ -30,5 +30,3 @@ def module_exists(directory, module_name):
         return False
     else:
         return True
-
-

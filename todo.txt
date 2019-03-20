@@ -1,0 +1,11 @@
+TODOS
+############################################################################
+-> Estendere il software con la generazione dei principali servizi di rete.
+   Quindi oltre a creare istanze di server, deve anche poter creare istanze
+   di ssh, ftp, ecc...
+-> Implementare server di produzione 
+CONFIGURAZIONE PER IL DEPLOYMENT
+############################################################################
+-> Tutti i servizi creati saranno attivati sulla rete interna, nelle porte 
+a loro dedicate. Questo tipo di honeypot al momento analizzerà attacchi che 
+arrivano dalla rete interna.

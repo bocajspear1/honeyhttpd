@@ -1,5 +1,6 @@
 from honeyhttpd.lib.server import Server
 
+'''
 class TestServer(Server):
 
     def _dump_headers(self, headers):
@@ -68,7 +69,7 @@ class TestServer(Server):
     def error_format(self, port):
         return """<html><head><title>""" + self.name() + "/" + self.version() + """ - Error report</title><style><!--H1 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:Tahoma,Arial,sans-serif;color:black;background-color:white;} B {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;} P {font-family:Tahoma,Arial,sans-serif;background:white;color:black;font-size:12px;}A {color : black;}A.name {color : black;}HR {color : #525D76;}--></style> </head><body><h1>HTTP Status $code - </h1><HR size="1" noshade="noshade"><p><b>type</b> Status report</p><p><b>message</b> <u>$message</u></p><p><b>description</b> <u>$description</u></p><HR size="1" noshade="noshade"><h3>""" + self.name() + "/" + self.version() + """</h3></body></html>
 
-"""
+        """
 
     def on_GET(self, path, headers):
 
@@ -107,4 +108,12 @@ class TestServer(Server):
 
     def on_complete(self, client, code, req_headers, res_headers, request, response):
         # Do something when the request is done and the response is sent
+        pass
+'''
+
+class TestServer(Server):
+    def do_GET(self):
+        pass
+
+    def do_POST(self):
         pass
