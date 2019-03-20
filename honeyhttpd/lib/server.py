@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 from socketserver import TCPServer
 import sys 
+import ssl
 from datetime import datetime
 
 # Backword compatibility with python 2.x
@@ -11,48 +12,43 @@ else:
 
 class BaseHandler(BaseHTTPRequestHandler):
     """
-        Handler di base per le richieste in arrivo.
-        Le variabili d'instanza più importanti per la gesione del tipo di richliesta sono:
+        Base handler for in-come requests.
         -> self.command   => GET/POST/PUT/DELETE/HEAD
         -> self.path      => / or /index.html
         -> self.request_version   => HTTP/1.1
-        TODO: Ritornare anche un pò di header validi
-        TODO: Collegare il logging
+        TODO: Manage header
     """
     # Must be overrided in other server istance
     server_version = "Apache/2.4"
     def do_GET(self):
         """
-            Gestione delle richieste GET.
+            Management of GET requests.
             ****
-            Deve essere sovrascritto per gestire
-            la logica di accesso alle risorse
+            Must be extended.
             ****
         """
         print("[%s] => %s %s %s %s" %(self.address_string(), self.command, self.path, self.request_version, datetime.now()))
 
     def do_POST(self):
         """
-            Gestione delle richieste POST.
+            Management of POST requests.
             ****
-            Deve essere sovrascritto per gestire
-            la logica di accesso alle risorse
+            Must be extended.
             ****
         """
         self.send_response(505, message="Internal Server Error")
 
     def server_version(self):
         """ 
-            Stampa la versione del server corrente.
+            Print server_version.
             Es. Apache/Tomcat ecc..
         """
         return self.server_version
 
 class Server(TCPServer):
     """ 
-        TODO: Gestire https e ssl
-        TODO: Collegare il logging
-        TODO: Definire bene quali informazioni loggare 
+        TODO: Implement https wrapper
+        TODO: link the login system
     """
     # Only for devlopment process when in production set to false 
     allow_reuse_address = True

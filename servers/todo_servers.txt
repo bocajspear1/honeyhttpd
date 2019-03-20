@@ -1,6 +1,3 @@
 TODOS
 ############################################################################
--> Rendere compatibili i server di questa directory con le istruzioni di 
-   esecuzione del file json
--> Creare varie tipologie di server ovviamente fake 
--> implementare almento il servizio ftp
+->initially implement the ftp service
