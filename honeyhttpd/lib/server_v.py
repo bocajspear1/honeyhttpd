@@ -181,8 +181,7 @@ class Server(threading.Thread):
         self._timeout = timeout
         self._ssl_cert = ssl_cert
         self._loggers = loggers
-
-
+        
     # Setup and start the handler
     def run(self):
         """

@@ -7,17 +7,30 @@
     "servers" : [
         {
         "handler": "TestServer",
+        "config" : 
+        {
+            "server_address": ["localhost", 8443],
+            "timeout": 10,
+            "mode": "https",
+            "logger" : "",
+            "handlerClass" : "",
+            "bindActivate" : "",
+            "cert_path" : "certs/server.pem"
+        }
+    },{
+        "handler": "TestServer",
         "config" :
         {
             "server_address": ["localhost", 8080],
             "timeout": 10,
-            "mode": "http",
+            "mode": "",
             "logger" : "",
             "handlerClass" : "",
             "bindActivate" : "",
             "cert_path" : ""
         }
-    }],
+    }
+    ],
     "user": "nobody",
     "group": "nogroup"
 }

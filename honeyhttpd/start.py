@@ -6,7 +6,6 @@
 .. moduleauthor:: Jacob Hartman <jacob@j2h2.com>
 
 """
-# TODO: this module must be transformed into a web shell
 
 import sys
 import argparse
@@ -16,15 +15,9 @@ import json
 import pwd
 import grp
 from termcolor import colored
-
-
-if sys.version_info.major == 2:
-    from Queue import Queue
-else:
-    from queue import Queue
+from threading import Thread
 
 from .lib.module_util import import_module
-
 
 VERSION = "v0.5.2"
 
@@ -40,18 +33,29 @@ BANNER = """
                                                                                         
 """
 
+
 class ServerManager(object):
     """
-        Manage server istances
+        Manage server instances
+        FIXME : Understand when to delete instances and connect the mechanism to the 
+                server manager.
     """
+    LOGGER_PATH = os.path.join(os.getcwd(), "loggers")
+
     def __init__(self, config_file_path):
         self._servers = []  # instance of server running on machine
-        self._config = {}   # global configuration maybe for every server istance
+        self._config = {}   # global configuration maybe for every server instance
         self.parse_config(config_file_path)
         self.__loggers = [] # type of logger enables
-        print(colored(BANNER, 'yellow'))
-        print("Welcome to HoneyHTTPd " + VERSION + "\n")
+        self.notice(BANNER, type="", color="yellow")
+        self.notice("Welcome to HoneyHTTPd %s" % VERSION)
         #self.setup_loggers()
+
+    def new_server_instance(self, callable, **kwargs):
+        t = Thread(target=callable, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+        return t
 
     def setup_loggers(self):
         """
@@ -64,7 +68,7 @@ class ServerManager(object):
             if self._config['loggers'][item]['active'] == False:
                 continue
             # if logger is active so try to load it dinamically
-            logger_module = import_module("honeyhttpd/loggers", item)
+            logger_module = import_module(self.LOGGER_PATH, item)
             if logger_module is None:
                 self.error("Invalid handler " + item)
                 sys.exit(2)
@@ -90,7 +94,7 @@ class ServerManager(object):
                 continue
             active_cfg[c] = v
         return active_cfg
-        
+
     def start_servers(self):
         """
             Start server with right configuration 
@@ -103,9 +107,7 @@ class ServerManager(object):
         # number of server started
         server_count = len(server_list)
 
-        self.notice("Starting " + str(server_count) + " servers\n")
-
-        wait = Queue(maxsize=server_count)
+        self.notice("Starting %s servers" % str(server_count))
 
         for server_config in server_list:
             server_module = import_module("servers", server_config["handler"])
@@ -113,29 +115,26 @@ class ServerManager(object):
                 self.error("Invalid handler " + server_config["handler"])
                 sys.exit(2)
             config = server_config["config"]
-            # FIXME : Devo convertire in tupla server_address
             if config["mode"] == "http":
-                print("Starting http on port " + str(config['server_address'][1]))
-                server = server_module(**self.get_active_server_config(config))
+                server = self.new_server_instance(callable=server_module, **self.get_active_server_config(config))
             else:
                 certificate = config["cert_path"]
                 if certificate is None:
                     self.error("cert_path not set for https " + server_config["handler"])
                     sys.exit(3)
-                print("Starting https on port " + str(config['server_address'][1]))
-                server = server_module(**self.get_active_server_config(config))
-            # Register running server istance
-            self.update_server_istance(server)
-            self.check_server_istance()
-            print("[**] Server manager is going to shutdown now ...")
- 
+                server = self.new_server_instance(callable=server_module, **self.get_active_server_config(config))
+            # Register running server's istance
+            self.update_server_instances(server)
+
+        self.check_server_instances()
+        self.notice("Server manager is going to shutdown now...", color="red", type="[**]")
+
     def drop_privileges(self):
         """
             Remove root privileges
             @param : None
             @return : None
         """
-        
         if os.geteuid() != 0 and os.getegid() != 0:
             return
         
@@ -173,33 +172,32 @@ class ServerManager(object):
         
         self._config = config
 
-    def update_server_istance(self, s):
+    def update_server_instances(self, s):
         """
-            Update active server istance
-            @param s: server istance
+            Update active server instances
+            @param s: server instance
             @return : None
         """
         self._servers.append(s)
 
-    def check_server_istance(self):
+    def check_server_instances(self):
         """
-            Terminate server manager when all of server istances are destroyed
+            Terminate server manager when all of server instances are destroyed
             @ return : None
         """
         try:
             while True:
                 if len(self._servers) == 0:
-                    self.notice("Seams that all server instace has been destroyed\nDropping privileges...")
+                    self.notice("Seams that all server instace has been destroyed")
                     break
+                continue
         except KeyboardInterrupt:
             self.error("Manual interrupt generated")
         finally:
             self.drop_privileges()
         
-    def notice(self, message):
-        print(colored("[*] " + message, "cyan"))
+    def notice(self, message, color="cyan", type="[*]"):
+        print(colored("%s %s" % (type,message), color))
 
     def error(self, message):
         print(colored("[!] " + message, "red"))
-
-

@@ -1,14 +1,20 @@
-from http.server import BaseHTTPRequestHandler
-from socketserver import TCPServer
-import sys 
-import ssl
-from datetime import datetime
+"""
+    Author : Cavallo Luigi
+    Info   : fork of https://github.com/bocajspear1 project named honeypothttpd
+"""
+
+from socketserver import ThreadingTCPServer, TCPServer  # for TCPServer type
+import sys                                              # for system command
+import os                                               # for file operations
+from ssl import SSLContext                              # for secure sock
+from datetime import datetime                           # for current datetime
 
 # Backword compatibility with python 2.x
 if sys.version_info.major == 2:
-    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+    from BaseHTTPServer import BaseHTTPRequestHandler
 else:
-    from http.server import HTTPServer, BaseHTTPRequestHandler
+    from http.server import BaseHTTPRequestHandler
+
 
 class BaseHandler(BaseHTTPRequestHandler):
     """
@@ -18,8 +24,9 @@ class BaseHandler(BaseHTTPRequestHandler):
         -> self.request_version   => HTTP/1.1
         TODO: Manage header
     """
-    # Must be overrided in other server istance
+    # Must be overrided in other server instance
     server_version = "Apache/2.4"
+
     def do_GET(self):
         """
             Management of GET requests.
@@ -27,7 +34,8 @@ class BaseHandler(BaseHTTPRequestHandler):
             Must be extended.
             ****
         """
-        print("[%s] => %s %s %s %s" %(self.address_string(), self.command, self.path, self.request_version, datetime.now()))
+        print("[%s:%d] => %s %s %s %s" %(self.client_address[0], self.client_address[1], 
+                                        self.command, self.path, self.request_version, datetime.now()))
 
     def do_POST(self):
         """
@@ -45,15 +53,19 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
         return self.server_version
 
+
 class Server(TCPServer):
     """ 
         TODO: Implement https wrapper
-        TODO: link the login system
+        TODO: link the login 
+        TODO: Redefine instance variables as private and create 
+              properties to access them safely
+        TODO: Adding security check for methods e some instance attribute
     """
-    # Only for devlopment process when in production set to false 
     allow_reuse_address = True
     
-    def __init__(self, server_address, loggers="", RequestHandlerClass=BaseHandler, bind_and_activate=True, mode="http", cert_path=None, timeout=None):
+    def __init__(self, server_address, loggers="", RequestHandlerClass=BaseHandler, bind_and_activate=True, mode="http",
+                 cert_path=None, timeout=None):
         super().__init__(tuple(server_address), RequestHandlerClass, bind_and_activate)
         # Loggers type
         self.log = loggers
@@ -63,13 +75,20 @@ class Server(TCPServer):
         self.timeout = timeout
         # Only for https certificate 
         self.cert_path = cert_path
-        # Left https logic here ....
-        # ...
+        # https logic 
+        if self.cert_path is not None:
+            if os.path.exists(self.cert_path):
+                self.ctx = SSLContext()
+                self.ctx.load_cert_chain(certfile=self.cert_path)
+                self.socket = SSLContext.wrap_socket(self.ctx, sock=self.socket, server_side=True)
+            else:
+                # TODO : This instance must be eliminated from server's instance
+                raise OSError("[!] Certification path error")
         # Start server
         self.serve_forever()
 
     def server_activate(self):
-        print("[*] Server is now active on http://%s:%d" %(self.server_address[0],self.server_address[1]))
+        print("[*] Server is now active on %s:%d" % (self.server_address[0], self.server_address[1]))
         super().server_activate()
 
     def startup_logger(self):
@@ -77,7 +96,3 @@ class Server(TCPServer):
             Initialize the logger type
         """
         pass
-
-if __name__ == "__main__":
-    # For individual testing 
-    Server(("localhost", 8080))
