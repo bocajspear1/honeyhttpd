@@ -2,14 +2,10 @@
 .. module:: start
    :platform: Unix
    :synopsis: Main module for HoneyHTTPd. Starts servers.
-
 .. moduleauthor:: Jacob Hartman <jacob@j2h2.com>
-
 """
 
 import sys
-import argparse
-import time
 import os
 import json
 import pwd
@@ -30,26 +26,26 @@ BANNER = """
 | (   ) || |   | || | \   || (         ) (   | (   ) |   | |      | |   | (      | |   ) |
 | )   ( || (___) || )  \  || (____/\   | |   | )   ( |   | |      | |   | )      | (__/  )
 |/     \|(_______)|/    )_)(_______/   \_/   |/     \|   )_(      )_(   |/       (______/ 
-                                                                                        
+
 """
 
 
 class ServerManager(object):
     """
         Manage server instances
-        FIXME : Understand when to delete instances and connect the mechanism to the 
+        FIXME : Understand when to delete instances and connect the mechanism to the
                 server manager.
     """
     LOGGER_PATH = os.path.join(os.getcwd(), "loggers")
 
     def __init__(self, config_file_path):
         self._servers = []  # instance of server running on machine
-        self._config = {}   # global configuration maybe for every server instance
+        self._config = {}  # global configuration maybe for every server instance
         self.parse_config(config_file_path)
-        self.__loggers = [] # type of logger enables
+        self.__loggers = []  # type of logger enables
         self.notice(BANNER, type="", color="yellow")
         self.notice("Welcome to HoneyHTTPd %s" % VERSION)
-        #self.setup_loggers()
+        # self.setup_loggers()
 
     def new_server_instance(self, callable, **kwargs):
         t = Thread(target=callable, kwargs=kwargs)
@@ -89,7 +85,7 @@ class ServerManager(object):
             @return : server config
         """
         active_cfg = {}
-        for c,v in cfg.items():
+        for c, v in cfg.items():
             if v == "":
                 continue
             active_cfg[c] = v
@@ -97,7 +93,7 @@ class ServerManager(object):
 
     def start_servers(self):
         """
-            Start server with right configuration 
+            Start server with right configuration
             @param : None
             @return : None
         """
@@ -123,7 +119,7 @@ class ServerManager(object):
                     self.error("cert_path not set for https " + server_config["handler"])
                     sys.exit(3)
                 server = self.new_server_instance(callable=server_module, **self.get_active_server_config(config))
-            # Register running server's istance
+            # Register running server's instance
             self.update_server_instances(server)
 
         self.check_server_instances()
@@ -137,7 +133,7 @@ class ServerManager(object):
         """
         if os.geteuid() != 0 and os.getegid() != 0:
             return
-        
+
         nobody_uid = pwd.getpwnam(self._config['user']).pw_uid
         nobody_gid = grp.getgrnam(self._config['group']).gr_gid
         self.notice("Dropping Privileges!")
@@ -167,9 +163,9 @@ class ServerManager(object):
             if item not in config:
                 self.error("Invalid config, '" + item + "' key not found")
                 sys.exit(1)
-        # little fix for server_address value that must be 
-        #config["servers"]["config"]["server_address"] = tuple(config["servers"]["config"]["server_address"])
-        
+        # little fix for server_address value that must be
+        # config["servers"]["config"]["server_address"] = tuple(config["servers"]["config"]["server_address"])
+
         self._config = config
 
     def update_server_instances(self, s):
@@ -195,9 +191,9 @@ class ServerManager(object):
             self.error("Manual interrupt generated")
         finally:
             self.drop_privileges()
-        
+
     def notice(self, message, color="cyan", type="[*]"):
-        print(colored("%s %s" % (type,message), color))
+        print(colored("%s %s" % (type, message), color))
 
     def error(self, message):
         print(colored("[!] " + message, "red"))

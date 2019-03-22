@@ -4,66 +4,43 @@
 """
 
 from socketserver import ThreadingTCPServer, TCPServer  # for TCPServer type
-import sys                                              # for system command
+from socketserver import StreamRequestHandler           # for handle requests
 import os                                               # for file operations
 from ssl import SSLContext                              # for secure sock
 from datetime import datetime                           # for current datetime
 
-# Backword compatibility with python 2.x
-if sys.version_info.major == 2:
-    from BaseHTTPServer import BaseHTTPRequestHandler
-else:
-    from http.server import BaseHTTPRequestHandler
 
-
-class BaseHandler(BaseHTTPRequestHandler):
+class BaseHandler(StreamRequestHandler):
     """
-        Base handler for in-come requests.
-        -> self.command   => GET/POST/PUT/DELETE/HEAD
-        -> self.path      => / or /index.html
-        -> self.request_version   => HTTP/1.1
-        TODO: Manage header
+        Handler for requests
     """
-    # Must be overrided in other server instance
-    server_version = "Apache/2.4"
+    def setup(self):
+        super().setup()
 
-    def do_GET(self):
+    def handle(self):
         """
-            Management of GET requests.
-            ****
-            Must be extended.
-            ****
+            Must be extended
+        :return:
         """
-        print("[%s:%d] => %s %s %s %s" %(self.client_address[0], self.client_address[1], 
-                                        self.command, self.path, self.request_version, datetime.now()))
+        method, req, proto = self.rfile.readline().strip().decode().split()
+        print("[%s:%d] => %s %s %s %s" % (self.client_address[0], self.client_address[1], method, req, proto,
+                                         datetime.now()))
+        self.wfile.write("\n".encode())
 
-    def do_POST(self):
-        """
-            Management of POST requests.
-            ****
-            Must be extended.
-            ****
-        """
-        self.send_response(505, message="Internal Server Error")
-
-    def server_version(self):
-        """ 
-            Print server_version.
-            Es. Apache/Tomcat ecc..
-        """
-        return self.server_version
+    def finish(self):
+        super().finish()
 
 
 class Server(TCPServer):
-    """ 
+    """
         TODO: Implement https wrapper
-        TODO: link the login 
-        TODO: Redefine instance variables as private and create 
+        TODO: link the login
+        TODO: Redefine instance variables as private and create
               properties to access them safely
         TODO: Adding security check for methods e some instance attribute
     """
     allow_reuse_address = True
-    
+
     def __init__(self, server_address, loggers="", RequestHandlerClass=BaseHandler, bind_and_activate=True, mode="http",
                  cert_path=None, timeout=None):
         super().__init__(tuple(server_address), RequestHandlerClass, bind_and_activate)
@@ -73,9 +50,9 @@ class Server(TCPServer):
         self.mode = mode
         # timeout definition
         self.timeout = timeout
-        # Only for https certificate 
+        # Only for https certificate
         self.cert_path = cert_path
-        # https logic 
+        # https logic
         if self.cert_path is not None:
             if os.path.exists(self.cert_path):
                 self.ctx = SSLContext()

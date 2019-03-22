@@ -1,4 +1,4 @@
-from honeyhttpd.lib.server import Server
+from honeyhttpd.lib.server import BaseHandler, Server
 
 '''
 class TestServer(Server):
@@ -111,10 +111,14 @@ class TestServer(Server):
         pass
 '''
 
-# TODO: Must be implemented
-class TestServer(Server):
-    def do_GET(self):
+
+class TestServerHandler(BaseHandler):
+    """
+        Manage TestServer instance type
+    """
+    def handle(self):
         pass
 
-    def do_POST(self):
-        pass
+
+class TestServer(Server):
+    pass

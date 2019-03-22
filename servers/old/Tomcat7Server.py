@@ -1,4 +1,4 @@
-from honeyhttpd.lib.server import Server
+from servers.Server import Server
 
 class Tomcat7Server(Server):
 
