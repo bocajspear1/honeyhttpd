@@ -15,8 +15,8 @@ HoneyPoke supports both Python2 and Python 3.
 
 1. Clone or download this repo
 2. Install dependencies: 
-    * Python 2: `sudo pip -r requirements2.txt` 
-    * Python 3: `sudo pip3 -r requirements3.txt` 
+    * Python 2: `sudo pip install -r requirements.txt` 
+    * Python 3: `sudo pip3 install -r requirements.txt` 
 3. Be sure the `large` and `logs` directories are writeable by the user and group you plan to have HoneyHTTPD running under.
 
 ## Setup
