@@ -2,15 +2,15 @@
 
 ![HoneyHTTPD Logo](honeyhttpd.png)
 
-HoneyHTTPD is a Python-based web server honeypot framework. It makes it easy to set up fake web servers and record the requests given to it.
-
+HoneyHTTPD is a Python-based web server framework. It makes it easy to set up fake web servers and web services, respond with the precise data you want, and record the requests given to it. HoneyHTTPD allows you to build your responses with Python at the HTTP protocol level to imitate almost any server or service you want. No complex setups and proxies required!
 
 This information can be logged to different places, the currently supported outputs are:
 * Files
 * ElasticSearch
 * Stdout
+* AWS S3
 
-HoneyPoke supports both Python2 and Python 3.
+HoneyPoke supports both Python 2.7 (I know its EOL, but just in case) and Python 3.
 
 ## Installation
 
