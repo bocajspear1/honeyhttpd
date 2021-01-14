@@ -1,4 +1,9 @@
 node_modules/*
 *.pyc
 config.json
-./.upload.*
+upload.*
+venv/
+docs/build/
+logs/*.log
+*.pem
+.vscode/

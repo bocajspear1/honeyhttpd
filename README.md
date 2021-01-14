@@ -8,6 +8,7 @@ HoneyHTTPD is a Python-based web server honeypot framework. It makes it easy to 
 This information can be logged to different places, the currently supported outputs are:
 * Files
 * ElasticSearch
+* Stdout
 
 HoneyPoke supports both Python2 and Python 3.
 
@@ -54,4 +55,4 @@ Go at it! Open an issue, make a pull request, fork it, etc.
 
 ## License
 
-This project is licensed under the GNU General Public License (GPL) v3.0
+This project is licensed under the Mozilla Public License, v2.0 (formerly GPL 3.0)

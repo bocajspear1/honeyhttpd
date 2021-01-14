@@ -4,13 +4,17 @@ import ssl
 import sys
 import threading
 from string import Template
+import copy
 
 from .encode import *
 
 if sys.version_info.major == 2:
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+    from SocketServer import ThreadingMixIn
 else:
     from http.server import HTTPServer, BaseHTTPRequestHandler
+    from socketserver import ThreadingMixIn
+
 
 # Handler for HTTP requests
 class HTTPHandler(BaseHTTPRequestHandler, object):
@@ -168,7 +172,10 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
             res_headers, res_data = self.send_success_response(data, headers)
 
         self.on_complete(self.client_address, code, req_headers, res_headers, self.get_raw_request(), res_data)
-        
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 # Main server class. All other servers must inherit from this class
 class Server(threading.Thread):
     """
@@ -196,20 +203,24 @@ class Server(threading.Thread):
         """
         server_address = ('', int(self._port))
 
-        httpd = HTTPServer(server_address, HTTPHandler)
-        httpd.log = self.log
-        HTTPHandler.server_version = self.server_version()
-        HTTPHandler.sys_version = self.system()
-        HTTPHandler.error_message_format = self.error_format(self._port)
-        HTTPHandler.response_headers = self.response_headers
-        HTTPHandler.timeout = self._timeout
-        HTTPHandler.responses = self.responses()
+        # Make a local subclass so we have our own instance of this class
+        class MyHandler(HTTPHandler):
+            pass
 
-        HTTPHandler.on_request = self.on_request
-        HTTPHandler.on_GET = self.on_GET
-        HTTPHandler.on_POST = self.on_POST
-        HTTPHandler.on_error = self.on_error
-        HTTPHandler.on_complete = self.on_complete
+        httpd = ThreadingHTTPServer(server_address, MyHandler)
+        httpd.log = self.log
+        MyHandler.server_version = self.server_version()
+        MyHandler.sys_version = self.system()
+        MyHandler.error_message_format = self.error_format(self._port)
+        MyHandler.response_headers = self.response_headers
+        MyHandler.timeout = self._timeout
+        MyHandler.responses = self.responses()
+
+        MyHandler.on_request = self.on_request
+        MyHandler.on_GET = self.on_GET
+        MyHandler.on_POST = self.on_POST
+        MyHandler.on_error = self.on_error
+        MyHandler.on_complete = self.on_complete
 
         if self._ssl_cert is not None:
             httpd.socket = ssl.wrap_socket(httpd.socket, certfile=self._ssl_cert, server_side=True)

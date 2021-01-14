@@ -108,4 +108,6 @@ class ApacheServer(Server):
 
     def on_complete(self, client, code, req_headers, res_headers, request, response):
         # Do something when the request is done and the response is sent
-        pass
+        extra = {}
+
+        self.log(client, request, response, extra)

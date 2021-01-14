@@ -103,7 +103,7 @@ class ServerManager(object):
                      sys.exit(3)
                 print("Starting https on port " + str(server_config['port']))
                 server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers, server_config['cert_path'])
-            
+
             server.start()
             self._servers.append(server)
 
@@ -166,7 +166,7 @@ class ServerManager(object):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Look at what attackers are poking web servers with')
+    parser = argparse.ArgumentParser(description='Pretend to be any almost any HTTP server or service you want')
     parser.add_argument('--config', help='Path to configuration file', required=True)
 
     args = parser.parse_args()
