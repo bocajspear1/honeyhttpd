@@ -5,13 +5,12 @@ import platform
 class ElasticSearchLogger(object):
 
     def __init__(self, config):
-        self.__server = config['server']
-        if "https:" in self.__server:
-            self.__use_ssl = True
-        else:
-            self.__use_ssl = False
-
-        self.__verify_certs = config['verify']
+        self._server = config['server']
+        self._verify_certs = config['verify']
+        self._username = config.get('username', '')
+        self._password = config.get('password', '')
+        self._api_key = config.get('api_key', '')
+        self._index = config['index']
 
     def stores_large(self):
         return False
@@ -20,16 +19,22 @@ class ElasticSearchLogger(object):
         protocol = "http"
         if is_ssl:
             protocol = "https"
-        es = Elasticsearch(self.__server, use_ssl=self.__use_ssl, verify_certs=self.__verify_certs)
+        
+        es = None
+        if self._username != "":
+            es = Elasticsearch(self._server, basic_auth=(self._username, self._password), verify_certs=self._verify_certs )
+        elif self._api_key != "":
+            es = Elasticsearch(self._server, api_key=self._api_key, verify_certs=self._verify_certs )
+        else:
+            es = Elasticsearch(self._server, verify_certs=self._verify_certs )
 
-        es.index(index='honeyhttpd', doc_type='connection', body={
-            "time": datetime.datetime.now().isoformat(),
+        es.index(index=self._index, body={
+            "time": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "remote_ip": remote_ip,
             "remote_port": remote_port,
             "protocol": protocol,
             "port": port,
             "request": str(request),
             "response": str(response),
-            "is_large": is_large,
             "host": platform.node()
         })

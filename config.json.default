@@ -3,8 +3,11 @@
         "ElasticSearchLogger": {
             "active": false,
             "config": {
-                "server": "http://USERNAME:PASSWORD@ELASTICSEARCH_SERVER",
-		        "verify": false
+                "server": "https://localhost:9200",
+		        "verify": false,
+                "username": "elastic",
+                "password": "elastic123",
+                "index": "honeyhttpd"
             }
         }, 
         "FileLogger": {
