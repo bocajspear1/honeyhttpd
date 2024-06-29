@@ -44,7 +44,7 @@ Server modules live in the `servers` directory. They are classes that handle the
 ## Generating SSL certificates
 
 ```
-openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+openssl req -new -x509 -keyout server_key.pem -out server_cert.pem -days 365 -nodes
 ```
 
 From [here](https://gist.github.com/dergachev/7028596).

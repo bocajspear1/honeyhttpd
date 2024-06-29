@@ -4,7 +4,7 @@
             "active": false,
             "config": {
                 "server": "https://localhost:9200",
-		        "verify": false,
+                "verify": false,
                 "username": "elastic",
                 "password": "elastic123",
                 "index": "honeyhttpd"

@@ -25,7 +25,7 @@ else:
 from .lib.module_util import import_module
 
 
-VERSION = "v0.5.2"
+VERSION = "v0.5.3"
 
 BANNER = """
         _______  _        _______                   __________________ _______  ______  
@@ -102,7 +102,7 @@ class ServerManager(object):
                      self.error("cert_path not set for https " + handler)
                      sys.exit(3)
                 print("Starting https on port " + str(server_config['port']))
-                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers, server_config['cert_path'])
+                server = server_module(server_config['domain'], int(server_config['port']), server_config['timeout'], wait, self.__loggers, server_config['cert_path'], server_config['key_path'])
 
             server.start()
             self._servers.append(server)

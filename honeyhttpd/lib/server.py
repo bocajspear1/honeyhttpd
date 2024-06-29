@@ -5,6 +5,7 @@ import sys
 import threading
 from string import Template
 import copy
+import time
 
 from .encode import *
 
@@ -54,12 +55,16 @@ class HTTPHandler(BaseHTTPRequestHandler, object):
         """
         message = self.responses[code][0]
 
+        if not hasattr(self, 'headers'):
+            code, headers, message = self.on_error(code, [], message)
+        else:
+            code, headers, message = self.on_error(code, self.headers.items(), message)
+
         # Call the user's on_error hook
-        code, headers, message = self.on_error(code, self.headers.items(), message)
+        
         desc_template = Template(self.responses[code][1])
 
         
-
         set_path = ""
         set_method = ""
 
@@ -184,7 +189,7 @@ class Server(threading.Thread):
     .. warning:: The server will not operate while the user or group is root.
 
     """
-    def __init__(self, domain_name, port, timeout, queue, loggers, ssl_cert=None):
+    def __init__(self, domain_name, port, timeout, queue, loggers, ssl_cert=None, ssl_key=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self._domain_name = domain_name
@@ -192,6 +197,8 @@ class Server(threading.Thread):
         self._queue = queue
         self._timeout = timeout
         self._ssl_cert = ssl_cert
+        self._ssl_key = ssl_key
+        self._ssl_context = None
         self._loggers = loggers
 
 
@@ -223,7 +230,9 @@ class Server(threading.Thread):
         MyHandler.on_complete = self.on_complete
 
         if self._ssl_cert is not None:
-            httpd.socket = ssl.wrap_socket(httpd.socket, certfile=self._ssl_cert, server_side=True)
+            self._ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            self._ssl_context.load_cert_chain(self._ssl_cert, self._ssl_key)
+            httpd.socket = self._ssl_context.wrap_socket(httpd.socket, server_side=True)
 
         self.ready()
 
